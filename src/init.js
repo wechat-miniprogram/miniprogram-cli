@@ -66,7 +66,7 @@ async function copyOthers(dirPath) {
  * run init command
  */
 async function init(dirPath, options) {
-  await _.downloadTemplate()
+  await _.downloadTemplate(options.proxy)
   await _.recursiveMkdir(dirPath)
 
   await copyPackageJson(dirPath, options)

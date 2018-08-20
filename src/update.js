@@ -21,30 +21,22 @@ function checkOverride(type, override) {
 }
 
 /**
- * update tools/config.js
- */
-async function updateConfig() {
-  try {
-    // TODO
-  } catch (err) {
-    // ignore
-  }
-}
-
-/**
  * update package.json
  */
 async function updatePackageJson(dirPath) {
-  try {
-    // eslint-disable-next-line import/no-dynamic-require
-    const newJson = require(path.join(templateDir, 'package.json'))
-    // eslint-disable-next-line import/no-dynamic-require
-    const oldJson = require(path.join(dirPath, 'package.json'))
+  const newJsonPath = path.join(templateDir, 'package.json')
+  const oldJsonPath = path.join(dirPath, 'package.json')
 
-    // TODO
-  } catch (err) {
-    // ignore
-  }
+  // eslint-disable-next-line import/no-dynamic-require
+  const newJson = require(newJsonPath)
+  // eslint-disable-next-line import/no-dynamic-require
+  const oldJson = require(oldJsonPath)
+
+  oldJson.scripts = newJson.scripts
+  oldJson.jest = newJson.jest
+  oldJson.devDependencies = newJson.devDependencies
+
+  await _.writeFile(oldJsonPath, JSON.stringify(oldJson, null, '\t'))
 }
 
 /**
@@ -53,12 +45,17 @@ async function updatePackageJson(dirPath) {
 // eslint-disable-next-line complexity
 async function copyOthers(dirPath, options) {
   const override = options.override || []
+  let config = []
   let testUtils = []
   let otherTools = []
   let otherTestTools = []
   let otherConfig = []
   let demo = []
   let ignore = []
+
+  if (options.force || checkOverride('tools/config.js', override)) {
+    config = await _.globSync('tools/config.js', globOptions)
+  }
 
   if (options.force || checkOverride('test/utils.js', override)) {
     testUtils = await _.globSync('test/utils.js', globOptions)
@@ -78,20 +75,21 @@ async function copyOthers(dirPath, options) {
     otherConfig = [babel[0], eslint[0]]
   }
 
-  if (options.force || checkOverride('files in demo', override)) {
+  if (options.force || checkOverride('tools/demo', override)) {
     demo = await _.globSync('tools/demo/**/*', globOptions)
   }
 
-  if (options.force || checkOverride('files for ignore config', override)) {
+  if (options.force || checkOverride('ignore config', override)) {
     const gitignore = await _.globSync('./.gitignore', globOptions)
     const npmignore = await _.globSync('./.npmignore', globOptions)
 
     ignore = [gitignore[0], npmignore[0]]
   }
 
-  const allFiles = [].concat(testUtils, otherTools, otherTestTools, otherConfig, demo, ignore)
+  const allFiles = [].concat(config, testUtils, otherTools, otherTestTools, otherConfig, demo, ignore)
   for (let i = 0, len = allFiles.length; i < len; i++) {
     const filePath = allFiles[i]
+
     // eslint-disable-next-line no-await-in-loop
     if (filePath) await _.copyFile(path.join(templateDir, filePath), path.join(dirPath, filePath))
   }
@@ -101,17 +99,13 @@ async function copyOthers(dirPath, options) {
  * run update command
  */
 async function update(dirPath, options) {
-  // await _.removeDir(templateDir)
-  // await _.downloadTemplate()
+  await _.removeDir(templateDir)
+  await _.downloadTemplate(options.proxy)
 
   const override = options.override || []
 
   if (options.force || checkOverride('package.json', override)) {
     await updatePackageJson(dirPath)
-  }
-
-  if (options.force || checkOverride('tools/config.js', override)) {
-    await updateConfig(dirPath)
   }
 
   await copyOthers(dirPath, options)

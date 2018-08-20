@@ -44,7 +44,7 @@ function startInit(dirPath, options) {
       name: 'author',
       message: 'please input the author',
     }])
-    .then(answers => init(dirPath, answers))
+    .then(answers => init(dirPath, Object.assign(options, answers)))
     // eslint-disable-next-line no-console
     .catch(err => console.error(err))
 }
@@ -63,16 +63,16 @@ function startUpdate(dirPath, options) {
         message: 'which files should be overrided',
         pageSize: 10,
         choices: [
-          {name: 'package.json (only override the "scripts", "jest" and "devDependencies")', checked: true},
-          {name: 'tools/config.js (only do add or update, will not do remove)', checked: true},
+          {name: 'package.json (only override "scripts", "jest" and "devDependencies")', checked: true},
+          {name: 'tools/config.js', checked: true},
           {name: 'test/utils.js', checked: true},
-          {name: 'other tools files (gulpfile.js, tools/build.js, tools/utils.js, tools/checkcomponents.js, tools/test/*.js and so on)', checked: true},
-          {name: 'other config files (.babelrc, .eslintrc and so on)', checked: true},
-          {name: 'files in demo (tools/demo)'},
-          {name: 'files for ignore config (.gitignore, .npmignore)'}
+          {name: 'other tools files (gulpfile.js, tools/build.js, tools/utils.js, tools/checkcomponents.js, tools/test/*.js)', checked: true},
+          {name: 'other config files (.babelrc, .eslintrc)', checked: true},
+          {name: 'tools/demo'},
+          {name: 'ignore config (.gitignore, .npmignore)'}
         ]
       }])
-      .then(answers => update(dirPath, answers))
+      .then(answers => update(dirPath, Object.assign(options, answers)))
       // eslint-disable-next-line no-console
       .catch(err => console.error(err))
   }
@@ -85,6 +85,7 @@ program
   .command('init [dirPath]')
   .description('create a project for miniprogram custom component')
   .option('-f, --force', 'all files will be overrided whether it already exists or not')
+  .option('-p, --proxy', 'http/https request proxy')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 
@@ -105,6 +106,7 @@ program
   .command('update [dirPath]')
   .description('update the miniprogram custom component framwork')
   .option('-f, --force', 'all files will be overrided except src folder and test case files')
+  .option('-p, --proxy', 'http/https request proxy')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 

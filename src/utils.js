@@ -139,7 +139,7 @@ function getTempateDir() {
 /**
  * download template project
  */
-async function downloadTemplate() {
+async function downloadTemplate(proxy) {
   let hasDownload = false
   let timer
 
@@ -186,7 +186,8 @@ async function downloadTemplate() {
         extract: true,
         strip: 1,
         mode: '666',
-        headers: {accept: 'application/zip'}
+        headers: {accept: 'application/zip'},
+        proxy,
       })
 
       stop() // end
