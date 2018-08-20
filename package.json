@@ -1,5 +1,5 @@
 {
-  "name": "miniprogram-cli",
+  "name": "@wechat-miniprogram/miniprogram-cli",
   "version": "0.0.1",
   "description": "miniprogram custom component cli",
   "bin": {
