@@ -86,6 +86,7 @@ async function copyOthers(dirPath, options) {
     ignore = [gitignore[0], npmignore[0]]
   }
 
+  // eslint-disable-next-line max-len
   const allFiles = [].concat(config, testUtils, otherTools, otherTestTools, otherConfig, demo, ignore)
   for (let i = 0, len = allFiles.length; i < len; i++) {
     const filePath = allFiles[i]

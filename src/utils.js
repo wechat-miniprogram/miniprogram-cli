@@ -151,25 +151,23 @@ async function downloadTemplate(proxy) {
   }
 
   if (!hasDownload) {
+    // mock download progress
+    let total = 20
+    const msg = 'now downloading miniprogram-custom-component demo project'
+    const bar = new ProgressBar(':bar :token1', {
+      total, incomplete: '░', complete: '█', clear: true
+    })
+    const tick = () => setTimeout(() => {
+      total--
+      bar.tick({token1: msg})
+
+      if (total !== 1 && !bar.complete) tick()
+    }, 500)
+    const stop = () => {
+      while (!bar.complete) bar.tick({token1: msg})
+    }
+
     try {
-      // mock download progress
-      let total = 20
-      const msg = 'now downloading miniprogram-custom-component demo project'
-      const bar = new ProgressBar(':bar :token1', {
-        total, incomplete: '░', complete: '█', clear: true
-      })
-      const tick = () => setTimeout(() => {
-        total--
-        bar.tick({token1: msg})
-
-        if (total !== 1 && !bar.complete) {
-          tick()
-        }
-      }, 500)
-      const stop = () => {
-        while (!bar.complete) bar.tick({token1: msg})
-      }
-
       timer = setTimeout(() => {
         // if it exceeds 1 mins, exit it
         if (!bar.complete) {
@@ -192,6 +190,7 @@ async function downloadTemplate(proxy) {
 
       stop() // end
     } catch (err) {
+      stop()
       // eslint-disable-next-line no-console
       console.error(err)
     }

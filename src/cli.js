@@ -85,7 +85,7 @@ program
   .command('init [dirPath]')
   .description('create a project for miniprogram custom component')
   .option('-f, --force', 'all files will be overrided whether it already exists or not')
-  .option('-p, --proxy', 'http/https request proxy')
+  .option('-p, --proxy <url>', 'http/https request proxy')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 
@@ -106,7 +106,7 @@ program
   .command('update [dirPath]')
   .description('update the miniprogram custom component framwork')
   .option('-f, --force', 'all files will be overrided except src folder and test case files')
-  .option('-p, --proxy', 'http/https request proxy')
+  .option('-p, --proxy <url>', 'http/https request proxy')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 
