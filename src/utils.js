@@ -137,18 +137,25 @@ function getTempateDir() {
 }
 
 /**
- * download template project
+ * check template exists
  */
-async function downloadTemplate(proxy) {
-  let hasDownload = false
-  let timer
-
+async function checkTemplate() {
   try {
     await accessSync(templateDir)
-    hasDownload = true
+    return true
   } catch (err) {
     // ignore
   }
+
+  return false
+}
+
+/**
+ * download template project
+ */
+async function downloadTemplate(proxy) {
+  let hasDownload = await checkTemplate()
+  let timer
 
   if (!hasDownload) {
     // mock download progress
@@ -207,5 +214,6 @@ module.exports = {
   writeFile,
   removeDir,
   getTempateDir,
+  checkTemplate,
   downloadTemplate,
 }

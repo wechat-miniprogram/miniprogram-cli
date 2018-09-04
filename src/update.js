@@ -103,6 +103,14 @@ async function update(dirPath, options) {
   await _.removeDir(templateDir)
   await _.downloadTemplate(options.proxy)
 
+  const isTemlateExist = await _.checkTemplate()
+
+  if (!isTemlateExist) {
+    // eslint-disable-next-line no-console
+    console.log('can not download the template project, please check your internet connection.')
+    return
+  }
+
   const override = options.override || []
 
   if (options.force || checkOverride('package.json', override)) {

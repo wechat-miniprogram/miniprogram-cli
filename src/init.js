@@ -66,7 +66,20 @@ async function copyOthers(dirPath) {
  * run init command
  */
 async function init(dirPath, options) {
+  if (options.newest) {
+    await _.removeDir(templateDir)
+  }
+
   await _.downloadTemplate(options.proxy)
+
+  const isTemlateExist = await _.checkTemplate()
+
+  if (!isTemlateExist) {
+    // eslint-disable-next-line no-console
+    console.log('can not download the template project, please check your internet connection.')
+    return
+  }
+
   await _.recursiveMkdir(dirPath)
 
   await copyPackageJson(dirPath, options)

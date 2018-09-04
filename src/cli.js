@@ -86,6 +86,7 @@ program
   .description('create a project for miniprogram custom component')
   .option('-f, --force', 'all files will be overrided whether it already exists or not')
   .option('-p, --proxy <url>', 'http/https request proxy')
+  .option('-n, --newest', 'use newest template to initialize project')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 
