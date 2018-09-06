@@ -122,7 +122,7 @@ function startUpgrade(dirPath, options) {
     startUpgradeCustomComponent(dirPath, options)
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.log(`project does not exist: ${dirPath}, or project is invalid`)
+    console.log(`project is not a valid custom component project: ${dirPath}`)
   }
 }
 
