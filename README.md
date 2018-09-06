@@ -38,7 +38,7 @@ miniprogram init [options] [dirPath]
 miniprogram upgrade [options] [dirPath]
 ```
 
-根据最新模板对已有项目进行升级。
+根据最新模板对已有项目进行升级。目前仅支持**自定义组件**项目。
 
 支持 options 如下：
 
