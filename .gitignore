@@ -10,5 +10,4 @@ yarn-error.log*
 
 node_modules
 coverage
-test/demo
-src/template
+test/**/demo

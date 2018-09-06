@@ -6,14 +6,16 @@ const fs = require('fs')
 const program = require('commander')
 const inquirer = require('inquirer')
 
-const config = require('../package.json')
-const init = require('./init')
-const update = require('./update')
+const packageConfig = require('../package.json')
+const _ = require('./utils')
+const initCustomComponent = require('./custom-component/init')
+const upgradeCustomComponent = require('./custom-component/upgrade')
+const initQuickstart = require('./quickstart/init')
 
 /**
- * start init
+ * 开始初始化自定义组件
  */
-function startInit(dirPath, options) {
+function startInitCustomComponent(dirPath, options) {
   const defualtName = path.basename(dirPath)
 
   inquirer
@@ -44,17 +46,17 @@ function startInit(dirPath, options) {
       name: 'author',
       message: 'please input the author',
     }])
-    .then(answers => init(dirPath, Object.assign(options, answers)))
+    .then(answers => initCustomComponent(dirPath, Object.assign(options, answers)))
     // eslint-disable-next-line no-console
     .catch(err => console.error(err))
 }
 
 /**
- * start update
+ * 开始升级自定义组件
  */
-function startUpdate(dirPath, options) {
+function startUpgradeCustomComponent(dirPath, options) {
   if (options.force) {
-    update(dirPath, options)
+    upgradeCustomComponent(dirPath, options)
   } else {
     inquirer
       .prompt([{
@@ -72,51 +74,149 @@ function startUpdate(dirPath, options) {
           {name: 'ignore config (.gitignore, .npmignore)'}
         ]
       }])
-      .then(answers => update(dirPath, Object.assign(options, answers)))
+      .then(answers => upgradeCustomComponent(dirPath, Object.assign(options, answers)))
       // eslint-disable-next-line no-console
       .catch(err => console.error(err))
   }
 }
 
-program
-  .version(config.version)
-
-program
-  .command('init [dirPath]')
-  .description('create a project for miniprogram custom component')
-  .option('-f, --force', 'all files will be overrided whether it already exists or not')
-  .option('-p, --proxy <url>', 'http/https request proxy')
-  .option('-n, --newest', 'use newest template to initialize project')
-  .action((dirPath, options) => {
-    dirPath = dirPath || process.cwd()
-
+/**
+ * 开始初始化
+ */
+function startInit(dirPath, options) {
+  if (options.type === 'custom-component') {
+    // 自定义组件
     if (options.force) {
-      startInit(dirPath, options)
+      startInitCustomComponent(dirPath, options)
     } else {
       try {
         fs.accessSync(path.join(dirPath, './package.json'))
         // eslint-disable-next-line no-console
         console.log(`project already exists: ${dirPath}`)
       } catch (err) {
-        startInit(dirPath, options)
+        startInitCustomComponent(dirPath, options)
       }
+    }
+  } else {
+    // 其他 quickstart
+    if (options.force) {
+      initQuickstart(dirPath, options)
+    } else {
+      try {
+        fs.accessSync(path.join(dirPath, './project.config.json'))
+        // eslint-disable-next-line no-console
+        console.log(`project already exists: ${dirPath}`)
+      } catch (err) {
+        initQuickstart(dirPath, options)
+      }
+    }
+  }
+}
+
+/**
+ * 开始升级
+ */
+function startUpgrade(dirPath, options) {
+  try {
+    fs.accessSync(path.join(dirPath, './package.json'))
+    startUpgradeCustomComponent(dirPath, options)
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log(`project does not exist: ${dirPath}, or project is invalid`)
+  }
+}
+
+program
+  .version(packageConfig.version)
+
+/**
+ * 初始化相关
+ */
+program
+  .command('init [dirPath]')
+  .description('create a project with template project')
+  .option('-t, --type <type>', 'template project type, only accept "custom-component", "miniprogram", "node", "php", "plugin", "game"')
+  .option('-f, --force', 'all files will be overrided whether it already exists or not')
+  .option('-p, --proxy <url>', 'http/https request proxy')
+  .option('-n, --newest', 'use newest template to initialize project')
+  .action((dirPath, options) => {
+    dirPath = dirPath || process.cwd()
+
+    const choices = ['custom-component', 'miniprogram', 'node', 'php', 'plugin', 'game']
+
+    if (!options.type || choices.indexOf(options.type) < 0) {
+      // 未指定类型，则发起询问
+      inquirer
+        .prompt([{
+          type: 'list',
+          name: 'type',
+          message: 'which type of project want to use to initialize',
+          default: 'custom-component',
+          choices: ['custom-component', 'miniprogram', 'node', 'php', 'plugin', 'game'],
+        }])
+        .then(answers => startInit(dirPath, Object.assign(options, answers)))
+        // eslint-disable-next-line no-console
+        .catch(err => console.error(err))
+    } else {
+      // 已指定类型
+      startInit(dirPath, options)
     }
   })
 
+/**
+ * 升级相关
+ */
 program
-  .command('update [dirPath]')
-  .description('update the miniprogram custom component framwork')
+  .command('upgrade [dirPath]')
+  .description('upgrade the miniprogram custom component framwork')
   .option('-f, --force', 'all files will be overrided except src folder and test case files')
   .option('-p, --proxy <url>', 'http/https request proxy')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 
     try {
-      fs.accessSync(path.join(dirPath, './package.json'))
-      startUpdate(dirPath, options)
+      fs.accessSync(path.join(dirPath, './project.config.json'))
+
+      inquirer
+        .prompt([{
+          type: 'confirm',
+          name: 'force',
+          message: 'this project doesn\'t look like a custom component project, is it stop upgrading?',
+          default: true,
+        }])
+        .then(answers => {
+          if (!answers.force) {
+            // 猜测为非自定义组件项目，仍旧强制升级
+            startUpgrade(dirPath, options)
+          }
+        })
+        // eslint-disable-next-line no-console
+        .catch(err => console.error(err))
     } catch (err) {
+      // ignore
+      startUpgrade(dirPath, options)
+    }
+  })
+
+/**
+ * 缓存相关
+ */
+program
+  .command('cache')
+  .description('show the path of template projects cache')
+  .option('-c, --clear', 'clear cache')
+  .action(options => {
+    const templateDir = _.getTemplateDir()
+
+    if (options.clear) {
+      _.removeDir(templateDir)
+        // eslint-disable-next-line no-console
+        .then(() => console.log(`[remove cache done]: ${templateDir}`))
+        // eslint-disable-next-line no-console
+        .catch(err => console.error(err))
+    } else {
       // eslint-disable-next-line no-console
-      console.log(`project does not exist: ${dirPath}`)
+      console.log(templateDir)
     }
   })
 

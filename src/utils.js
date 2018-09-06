@@ -10,7 +10,7 @@ const ProgressBar = require('progress')
 const templateDir = path.join(os.tmpdir(), './miniprogram_cli_template')
 
 /**
- * async function wrapper
+ * 异步函数封装
  */
 function wrap(func, scope) {
   return function (...args) {
@@ -40,7 +40,14 @@ const writeFileSync = wrap(fs.writeFile)
 const globSync = wrap(glob)
 
 /**
- * create folder
+ * 获取模板所在目录
+ */
+function getTemplateDir() {
+  return templateDir
+}
+
+/**
+ * 递归创建目录
  */
 async function recursiveMkdir(dirPath) {
   const prevDirPath = path.dirname(dirPath)
@@ -67,7 +74,7 @@ async function recursiveMkdir(dirPath) {
 }
 
 /**
- * copy file
+ * 拷贝文件
  */
 async function copyFile(srcPath, distPath) {
   await recursiveMkdir(path.dirname(distPath))
@@ -80,7 +87,7 @@ async function copyFile(srcPath, distPath) {
 }
 
 /**
- * read file
+ * 读取文件
  */
 async function readFile(filePath) {
   try {
@@ -92,7 +99,7 @@ async function readFile(filePath) {
 }
 
 /**
- * write file
+ * 写文件
  */
 async function writeFile(filePath, data) {
   try {
@@ -105,17 +112,24 @@ async function writeFile(filePath, data) {
 }
 
 /**
- * remove dir
+ * 检查目录是否存在
  */
-async function removeDir(dirPath) {
-  let isExist = false
-
+async function checkDirExist(dirPath) {
   try {
-    await accessSync(templateDir)
-    isExist = true
+    await accessSync(dirPath)
+    return true
   } catch (err) {
     // ignore
   }
+
+  return false
+}
+
+/**
+ * 删除目录
+ */
+async function removeDir(dirPath) {
+  let isExist = await checkDirExist(dirPath)
 
   return new Promise((resolve, reject) => {
     if (!isExist) {
@@ -130,37 +144,17 @@ async function removeDir(dirPath) {
 }
 
 /**
- * get template dir
+ * 下载模板项目
  */
-function getTempateDir() {
-  return templateDir
-}
-
-/**
- * check template exists
- */
-async function checkTemplate() {
-  try {
-    await accessSync(templateDir)
-    return true
-  } catch (err) {
-    // ignore
-  }
-
-  return false
-}
-
-/**
- * download template project
- */
-async function downloadTemplate(proxy) {
-  let hasDownload = await checkTemplate()
+async function downloadTemplate(config, proxy) {
+  const templateProject = path.join(templateDir, config.name)
+  let hasDownload = await checkDirExist(templateProject)
   let timer
 
   if (!hasDownload) {
     // mock download progress
     let total = 20
-    const msg = 'now downloading miniprogram-custom-component demo project'
+    const msg = 'now downloading template project'
     const bar = new ProgressBar(':bar :token1', {
       total, incomplete: '░', complete: '█', clear: true
     })
@@ -176,7 +170,7 @@ async function downloadTemplate(proxy) {
 
     try {
       timer = setTimeout(() => {
-        // if it exceeds 1 mins, exit it
+        // 超过一分钟没下载完，直接退出进程
         if (!bar.complete) {
           stop()
           // eslint-disable-next-line no-console
@@ -185,9 +179,9 @@ async function downloadTemplate(proxy) {
         }
       }, 60 * 1000)
 
-      tick() // begin
+      tick() // 开始
 
-      await download('https://github.com/wechat-miniprogram/miniprogram-custom-component/archive/master.zip', templateDir, {
+      await download(config.download, templateProject, {
         extract: true,
         strip: 1,
         mode: '666',
@@ -195,7 +189,7 @@ async function downloadTemplate(proxy) {
         proxy,
       })
 
-      stop() // end
+      stop() // 结束
     } catch (err) {
       stop()
       // eslint-disable-next-line no-console
@@ -213,7 +207,7 @@ module.exports = {
   readFile,
   writeFile,
   removeDir,
-  getTempateDir,
-  checkTemplate,
+  getTemplateDir,
+  checkDirExist,
   downloadTemplate,
 }
