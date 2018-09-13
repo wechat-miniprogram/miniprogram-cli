@@ -4,8 +4,6 @@
 
 * 第三方自定义组件（custom-component）
 * 小程序 quickstart（miniprogram）
-* 小程序 + 腾讯云 wafer2 nodejs 解决方案（node）
-* 小程序 + 腾讯云 wafer2 php 解决方案（php）
 * 小程序插件 quickstart（plugin）
 * 小游戏 quickstart（game）
 

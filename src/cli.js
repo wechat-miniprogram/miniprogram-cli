@@ -135,14 +135,19 @@ program
 program
   .command('init [dirPath]')
   .description('create a project with template project')
-  .option('-t, --type <type>', 'template project type, only accept "custom-component", "miniprogram", "node", "php", "plugin", "game"')
+  .option('-t, --type <type>', 'template project type, only accept "custom-component", "miniprogram", "plugin", "game"')
   .option('-f, --force', 'all files will be overrided whether it already exists or not')
   .option('-p, --proxy <url>', 'http/https request proxy')
   .option('-n, --newest', 'use newest template to initialize project')
   .action((dirPath, options) => {
     dirPath = dirPath || process.cwd()
 
-    const choices = ['custom-component', 'miniprogram', 'node', 'php', 'plugin', 'game']
+    const choices = ['custom-component', 'miniprogram', 'plugin', 'game']
+
+    if (options.type === 'node' || options.type === 'php') {
+      // eslint-disable-next-lint no-console
+      console.log(`template project [ ${options.type} ] has been deprecated`)
+    }
 
     if (!options.type || choices.indexOf(options.type) < 0) {
       // 未指定类型，则发起询问
@@ -152,7 +157,7 @@ program
           name: 'type',
           message: 'which type of project want to use to initialize',
           default: 'custom-component',
-          choices: ['custom-component', 'miniprogram', 'node', 'php', 'plugin', 'game'],
+          choices,
         }])
         .then(answers => startInit(dirPath, Object.assign(options, answers)))
         // eslint-disable-next-line no-console
