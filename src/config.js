@@ -18,16 +18,4 @@ module.exports = {
     name: 'plugin',
     download: 'https://github.com/wechat-miniprogram/miniprogram-plugin-quickstart/archive/master.zip',
   },
-  
-  // 废弃
-  node: {
-    name: 'node',
-    download: 'https://github.com/wechat-miniprogram/miniprogram-node-quickstart/archive/master.zip',
-  },
-  
-  // 废弃
-  php: {
-    name: 'php',
-    download: 'https://github.com/wechat-miniprogram/miniprogram-php-quickstart/archive/master.zip',
-  },
 }
